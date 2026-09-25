@@ -48,7 +48,7 @@ impl IPanel for ItemSlot {
         self.base_mut().set_drag_preview(&preview);
 
         let mut dict = Dictionary::new();
-        dict.set("item_id", item_id.to_variant());
+        dict.set("item_id", &item_id.to_variant());
         dict.set("item_id", &item_id.to_variant());
         dict.set("source_path", &self.base().get_path().to_variant());
         Variant::from(dict)
