@@ -1,0 +1,250 @@
+[gd_scene format=3 uid="uid://8pbyswy5jkrl"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_7dm0k"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7dm0k"]
+albedo_color = Color(1, 0.85882354, 1, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_7dm0k"]
+size = Vector2(50, 50)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ig7tw"]
+size = Vector3(50, 0.1, 50)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7dm0k"]
+size = Vector3(0.4, 0.4, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ig7tw"]
+albedo_color = Color(0.94739705, 0.8286374, 0.3280679, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_0xm2m"]
+size = Vector3(0.4, 0.4, 0.4)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_7dm0k"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_ig7tw"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0xm2m"]
+albedo_color = Color(0.8437476, 0.51459557, 0.66093916, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_0xm2m"]
+size = Vector3(1, 2, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h2yge"]
+albedo_color = Color(0.12941177, 1, 1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1bvp3"]
+material = SubResource("StandardMaterial3D_h2yge")
+size = Vector3(1, 2, 1)
+
+[node name="Node3D" type="Node3D" unique_id=1490640388]
+
+[node name="Player" type="Player" parent="." unique_id=1643249659]
+unique_name_in_owner = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player" unique_id=1837120924]
+shape = SubResource("CapsuleShape3D_7dm0k")
+
+[node name="Camera3D" type="Camera3D" parent="Player" unique_id=2127794989]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+current = true
+
+[node name="world" type="Node" parent="." unique_id=1767162233]
+
+[node name="floor" type="MeshInstance3D" parent="world" unique_id=1373366482]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.014840603, -1.1920929e-07, -0.0060269833)
+material_override = SubResource("StandardMaterial3D_7dm0k")
+mesh = SubResource("PlaneMesh_7dm0k")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="world/floor" unique_id=625149623]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="world/floor/StaticBody3D" unique_id=1664469037]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
+shape = SubResource("BoxShape3D_ig7tw")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="world" unique_id=229861602]
+transform = Transform3D(1, 0, 0, 0, 0.7071068, 0.7071068, 0, -0.7071068, 0.7071068, 0, 0, 0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="world" unique_id=1535021167]
+
+[node name="Interactables" type="Node" parent="." unique_id=1432592175]
+
+[node name="Item" type="StaticBody3D" parent="Interactables" unique_id=380966667 groups=["item"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2563442, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactables/Item" unique_id=1171365161]
+shape = SubResource("BoxShape3D_7dm0k")
+debug_color = Color(0.29166692, 0.5728589, 0.7159297, 0.41960785)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Interactables/Item" unique_id=1978084825]
+material_override = SubResource("StandardMaterial3D_ig7tw")
+mesh = SubResource("BoxMesh_0xm2m")
+
+[node name="Item2" type="StaticBody3D" parent="Interactables" unique_id=917779823 groups=["item"]]
+transform = Transform3D(0.9433617, 0, 0.331766, 0, 1, 0, -0.331766, 0, 0.9433617, 1.2987616, 0.2563442, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactables/Item2" unique_id=782505931]
+shape = SubResource("BoxShape3D_7dm0k")
+debug_color = Color(0.29166692, 0.5728589, 0.7159297, 0.41960785)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Interactables/Item2" unique_id=1785852595]
+material_override = SubResource("StandardMaterial3D_ig7tw")
+mesh = SubResource("BoxMesh_0xm2m")
+
+[node name="Item3" type="StaticBody3D" parent="Interactables" unique_id=382990480 groups=["item"]]
+transform = Transform3D(0.6356741, 0, -0.7719575, 0, 1, 0, 0.7719575, 0, 0.6356741, 0.7645432, 0.2563442, -1.4052026)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactables/Item3" unique_id=320021160]
+shape = SubResource("BoxShape3D_7dm0k")
+debug_color = Color(0.29166692, 0.5728589, 0.7159297, 0.41960785)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Interactables/Item3" unique_id=1293680872]
+material_override = SubResource("StandardMaterial3D_ig7tw")
+mesh = SubResource("BoxMesh_0xm2m")
+
+[node name="item4" type="StaticBody3D" parent="Interactables" unique_id=56268712 groups=["item"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.2215927, 0.49152434, -0.49315012)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactables/item4" unique_id=383548018]
+shape = SubResource("SphereShape3D_7dm0k")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Interactables/item4" unique_id=887214446]
+mesh = SubResource("SphereMesh_ig7tw")
+surface_material_override/0 = SubResource("StandardMaterial3D_0xm2m")
+
+[node name="NPCs" type="Node" parent="." unique_id=2063510539]
+
+[node name="DialogueObject" type="DialogueTrigger" parent="NPCs" unique_id=484507837 groups=["dialogue"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0168645, 2.9110513)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NPCs/DialogueObject" unique_id=63691500]
+shape = SubResource("BoxShape3D_0xm2m")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NPCs/DialogueObject/CollisionShape3D" unique_id=23763371]
+mesh = SubResource("BoxMesh_1bvp3")
+
+[node name="UI" type="Node" parent="." unique_id=2045111824]
+
+[node name="inventoryui" type="CanvasLayer" parent="UI" unique_id=450010586]
+
+[node name="inventory" type="Inventory" parent="UI/inventoryui" unique_id=2137857695]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="UI/inventoryui/inventory" unique_id=1777197719]
+layout_mode = 0
+offset_left = 57.0
+offset_top = 38.0
+offset_right = 325.0
+offset_bottom = 170.0
+
+[node name="slots" type="GridContainer" parent="UI/inventoryui/inventory/CenterContainer" unique_id=505715746]
+layout_mode = 2
+columns = 4
+
+[node name="Panel" type="ItemSlot" parent="UI/inventoryui/inventory/CenterContainer/slots" unique_id=188680291]
+clip_contents = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Panel2" type="ItemSlot" parent="UI/inventoryui/inventory/CenterContainer/slots" unique_id=2081340725]
+clip_contents = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Panel3" type="ItemSlot" parent="UI/inventoryui/inventory/CenterContainer/slots" unique_id=857489095]
+clip_contents = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Panel4" type="ItemSlot" parent="UI/inventoryui/inventory/CenterContainer/slots" unique_id=1618052936]
+clip_contents = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Panel5" type="ItemSlot" parent="UI/inventoryui/inventory/CenterContainer/slots" unique_id=1676938359]
+clip_contents = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Panel6" type="ItemSlot" parent="UI/inventoryui/inventory/CenterContainer/slots" unique_id=1334167662]
+clip_contents = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Panel7" type="ItemSlot" parent="UI/inventoryui/inventory/CenterContainer/slots" unique_id=1961050727]
+clip_contents = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Panel8" type="ItemSlot" parent="UI/inventoryui/inventory/CenterContainer/slots" unique_id=1932897413]
+clip_contents = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="DialogueUI" type="CanvasLayer" parent="UI" unique_id=51146077]
+
+[node name="DialogueBox" type="DialogueBox" parent="UI/DialogueUI" unique_id=1451321339]
+unique_name_in_owner = true
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -159.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="Background" type="Panel" parent="UI/DialogueUI/DialogueBox" unique_id=1988183397]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/DialogueUI/DialogueBox/Background" unique_id=1058239000]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="SpeakerLabel" type="Label" parent="UI/DialogueUI/DialogueBox/Background/VBoxContainer" unique_id=861738128]
+layout_mode = 2
+
+[node name="TextLabel" type="Label" parent="UI/DialogueUI/DialogueBox/Background/VBoxContainer" unique_id=300265922]
+layout_mode = 2
+
+[node name="ChoicesContainer" type="VBoxContainer" parent="UI/DialogueUI/DialogueBox/Background/VBoxContainer" unique_id=2094025276]
+layout_mode = 2
+
+[node name="Crosshair" type="CanvasLayer" parent="UI" unique_id=828655654]
+
+[node name="CrosshairRoot" type="Control" parent="UI/Crosshair" unique_id=443788227]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="UI/Crosshair/CrosshairRoot" unique_id=573385851]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ColorRect" type="ColorRect" parent="UI/Crosshair/CrosshairRoot/CenterContainer" unique_id=1313245850]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(6, 6)
+layout_mode = 2
+mouse_filter = 2

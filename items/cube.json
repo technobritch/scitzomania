@@ -1,0 +1,8 @@
+{
+  "name": "Кубик",
+  "description": "Обычный зелёный кубик. Ничего особенного.",
+  "mesh": "res://models/cube.tres",
+  "size": "small",
+  "class": "I",
+  "combinations": [{ "with": "sphere", "result": "cube" }]
+}
