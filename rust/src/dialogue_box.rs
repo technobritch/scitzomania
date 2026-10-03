@@ -1,6 +1,12 @@
-use godot::classes::{Control, IControl, Label, FileAccess, Json, VBoxContainer};
+use godot::classes::{Control, IControl, Label, FileAccess, Json, VBoxContainer, Node};
 use godot::classes::file_access::ModeFlags;
 use godot::prelude::*;
+
+struct DialogueChoice {
+    text: GString,
+    next: GString,
+    sets_flag: Option<GString>,
+}
 
 #[derive(GodotClass)]
 #[class(base=Control)]
@@ -8,7 +14,7 @@ pub struct DialogueBox {
     base: Base<Control>,
     nodes: Dictionary<Variant, Variant>,
     current_id: GString,
-    choices: Vec<(GString, GString)>,
+    choices: Vec<DialogueChoice>,
     in_choice_mode: bool,
     selected_index: i32,
 }
@@ -31,6 +37,24 @@ impl IControl for DialogueBox {
 impl DialogueBox {
     pub fn is_active(&self) -> bool {
         self.base().is_visible()
+    }
+
+    fn game_state(&self) -> Option<Gd<Node>> {
+        let root = self.base().get_tree().get_root()?;
+        root.try_get_node_as::<Node>("GameState")
+    }
+
+    fn flag_is_true(&self, flag: &GString) -> bool {
+        let Some(mut state) = self.game_state() else { return false };
+        state
+            .call("get_bool_flag", &[flag.to_variant(), false.to_variant()])
+            .try_to::<bool>()
+            .unwrap_or(false)
+    }
+
+    fn set_flag(&self, flag: &GString) {
+        let Some(mut state) = self.game_state() else { return };
+        state.call("set_bool_flag", &[flag.to_variant(), true.to_variant()]);
     }
 
     #[func]
@@ -104,7 +128,20 @@ impl DialogueBox {
                         if let Ok(choice_dict) = item.try_to::<Dictionary<Variant, Variant>>() {
                             let choice_text = choice_dict.get("text").map(|v| v.to::<GString>()).unwrap_or_default();
                             let next = choice_dict.get("next").map(|v| v.to::<GString>()).unwrap_or_default();
-                            self.choices.push((choice_text, next));
+                            let requires_flag = choice_dict.get("requires_flag").map(|v| v.to::<GString>());
+                            let sets_flag = choice_dict.get("sets_flag").map(|v| v.to::<GString>());
+
+                            if let Some(flag) = &requires_flag {
+                                if !self.flag_is_true(flag) {
+                                    continue;
+                                }
+                            }
+
+                            self.choices.push(DialogueChoice {
+                                text: choice_text,
+                                next,
+                                sets_flag,
+                            });
                         }
                     }
                 }
@@ -137,7 +174,8 @@ impl DialogueBox {
 
         container.set_visible(true);
 
-        for (text, _) in self.choices.clone() {
+        let texts: Vec<GString> = self.choices.iter().map(|c| c.text.clone()).collect();
+        for text in texts {
             let mut label = Label::new_alloc();
             label.set_text(&text);
             container.add_child(&label);
@@ -181,8 +219,15 @@ impl DialogueBox {
     #[func]
     pub fn confirm(&mut self) {
         if self.in_choice_mode {
-            if let Some((_, next)) = self.choices.get(self.selected_index as usize) {
-                let next = next.clone();
+            let idx = self.selected_index as usize;
+            if idx < self.choices.len() {
+                let next = self.choices[idx].next.clone();
+                let sets_flag = self.choices[idx].sets_flag.clone();
+
+                if let Some(flag) = sets_flag {
+                    self.set_flag(&flag);
+                }
+
                 if next.is_empty() {
                     self.close();
                 } else {

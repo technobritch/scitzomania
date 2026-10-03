@@ -2,6 +2,7 @@ use godot::classes::{Control, IControl, Input, InputEvent, GridContainer, Node, 
 use godot::classes::input::MouseMode;
 use godot::prelude::*;
 use crate::item_slot::ItemSlot;
+use crate::hiding_slot::HidingSlot;
 use crate::item_preview::ItemPreview;
 use crate::item_database;
 
@@ -10,6 +11,7 @@ use crate::item_database;
 struct Inventory {
     base: Base<Control>,
     selected_slot: Option<NodePath>,
+    selected_hiding_slot: Option<NodePath>,
     combine_source: Option<(GString, NodePath)>,
 }
 
@@ -19,6 +21,7 @@ impl IControl for Inventory {
         Self {
             base,
             selected_slot: None,
+            selected_hiding_slot: None,
             combine_source: None,
         }
     }
@@ -113,13 +116,27 @@ impl Inventory {
                 prev_slot.bind_mut().set_highlighted(false);
             }
         }
+        if let Some(prev_hiding) = self.selected_hiding_slot.clone() {
+            if let Some(mut prev_hs) = self.base().try_get_node_as::<HidingSlot>(&prev_hiding) {
+                prev_hs.bind_mut().set_highlighted(false);
+            }
+        }
 
+        let mut hiding_path: Option<NodePath> = None;
         if let Some(mut slot) = self.base().try_get_node_as::<ItemSlot>(&slot_path) {
             slot.bind_mut().set_highlighted(true);
+            hiding_path = slot.bind().hidden_at();
         }
-        self.selected_slot = Some(slot_path);
+        if let Some(h) = hiding_path.clone() {
+            if let Some(mut hs) = self.base().try_get_node_as::<HidingSlot>(&h) {
+                hs.bind_mut().set_highlighted(true);
+            }
+        }
 
-        self.update_preview_panel(&item_id);
+        self.selected_slot = Some(slot_path);
+        self.selected_hiding_slot = hiding_path.clone();
+
+        self.update_preview_panel(&item_id, hiding_path);
     }
 
     #[func]
@@ -128,7 +145,7 @@ impl Inventory {
         godot_print!("Выберите второй предмет для объединения");
     }
 
-    fn update_preview_panel(&mut self, item_id: &GString) {
+    fn update_preview_panel(&mut self, item_id: &GString, hiding_path: Option<NodePath>) {
         let Some(data) = item_database::load_item(&item_id.to_string()) else {
             return;
         };
@@ -148,6 +165,28 @@ impl Inventory {
         }
         if let Some(mut label) = self.base().try_get_node_as::<Label>("%selected_item_description") {
             label.set_text(&data.description);
+        }
+
+        let (location_text, detection_text) = match hiding_path {
+            Some(h) => {
+                if let Some(hs) = self.base().try_get_node_as::<HidingSlot>(&h) {
+                    let b = hs.bind();
+                    (
+                        b.display_name.to_string(),
+                        format!("{:.0}% заметность", b.detection_chance * 100.0),
+                    )
+                } else {
+                    ("В сумке".to_string(), "—".to_string())
+                }
+            }
+            None => ("В сумке".to_string(), "—".to_string()),
+        };
+
+        if let Some(mut label) = self.base().try_get_node_as::<Label>("%selected_item_location") {
+            label.set_text(&GString::from(location_text.as_str()));
+        }
+        if let Some(mut label) = self.base().try_get_node_as::<Label>("%selected_item_detection") {
+            label.set_text(&GString::from(detection_text.as_str()));
         }
     }
 }

@@ -18,11 +18,11 @@ impl ItemSize {
         }
     }
 
-    pub fn rank(&self) -> i32 {
+    pub fn units(&self) -> i32 {
         match self {
-            ItemSize::Small => 0,
-            ItemSize::Medium => 1,
-            ItemSize::Large => 2,
+            ItemSize::Small => 1,
+            ItemSize::Medium => 2,
+            ItemSize::Large => 4,
         }
     }
 }

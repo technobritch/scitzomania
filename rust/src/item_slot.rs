@@ -8,12 +8,19 @@ use crate::hiding_slot::HidingSlot;
 pub struct ItemSlot {
     base: Base<Panel>,
     item_id: Option<GString>,
+    hidden_at: Option<NodePath>,
+    highlighted: bool,
 }
 
 #[godot_api]
 impl IPanel for ItemSlot {
     fn init(base: Base<Panel>) -> Self {
-        Self { base, item_id: None }
+        Self {
+            base,
+            item_id: None,
+            hidden_at: None,
+            highlighted: false,
+        }
     }
 
     fn gui_input(&mut self, event: Gd<InputEvent>) {
@@ -47,10 +54,10 @@ impl IPanel for ItemSlot {
         preview.set_text(&item_id);
         self.base_mut().set_drag_preview(&preview);
 
-        let mut dict = Dictionary::new();
-        dict.set("item_id", &item_id.to_variant());
+        let mut dict = Dictionary::<Variant, Variant>::new();
         dict.set("item_id", &item_id.to_variant());
         dict.set("source_path", &self.base().get_path().to_variant());
+        dict.set("origin", &"item_slot".to_variant());
         Variant::from(dict)
     }
 
@@ -60,23 +67,46 @@ impl IPanel for ItemSlot {
 
     fn drop_data(&mut self, _at_position: Vector2, data: Variant) {
         let Ok(dict) = data.try_to::<Dictionary<Variant, Variant>>() else { return };
-        let Some(item_id_variant) = dict.get("item_id") else { return };
         let Some(source_path_variant) = dict.get("source_path") else { return };
-
-        let item_id = item_id_variant.to::<GString>();
         let source_path = source_path_variant.to::<NodePath>();
-        let my_item = self.item_id.clone();
+        let origin = dict.get("origin").map(|v| v.to::<GString>()).unwrap_or_default();
 
-        if let Some(mut src) = self.base().try_get_node_as::<ItemSlot>(&source_path) {
-            if src.instance_id() == self.base().instance_id() {
-                return;
-            }
-            src.bind_mut().set_item(my_item);
-        } else if let Some(mut src) = self.base().try_get_node_as::<HidingSlot>(&source_path) {
-            src.bind_mut().clear_item();
+        if source_path == self.base().get_path() {
+            return;
         }
 
-        self.set_item(Some(item_id));
+        let Some(mut source_slot) = self.base().try_get_node_as::<ItemSlot>(&source_path) else { return };
+
+        let dest_item = self.item_id.clone();
+        let dest_hidden_at = self.hidden_at.clone();
+        let (source_item, source_hidden_at) = {
+            let b = source_slot.bind();
+            (b.item_id.clone(), b.hidden_at.clone())
+        };
+
+        let unhiding = origin.to_string() == "hiding_slot";
+        let new_self_hidden = if unhiding { None } else { source_hidden_at.clone() };
+
+        self.set_item_and_link(source_item, new_self_hidden);
+        source_slot.bind_mut().set_item_and_link(dest_item, dest_hidden_at.clone());
+
+        if unhiding {
+            if let Some(h) = source_hidden_at {
+                if let Some(mut hs) = self.base().try_get_node_as::<HidingSlot>(&h) {
+                    hs.bind_mut().remove_occupant(&source_path);
+                }
+            }
+        } else if let Some(h) = source_hidden_at {
+            if let Some(mut hs) = self.base().try_get_node_as::<HidingSlot>(&h) {
+                hs.bind_mut().replace_occupant(&source_path, self.base().get_path());
+            }
+        }
+
+        if let Some(h) = dest_hidden_at {
+            if let Some(mut hs) = self.base().try_get_node_as::<HidingSlot>(&h) {
+                hs.bind_mut().replace_occupant(&self.base().get_path(), source_path.clone());
+            }
+        }
     }
 }
 
@@ -86,11 +116,42 @@ impl ItemSlot {
         self.item_id.is_some()
     }
 
+    pub fn item_id(&self) -> Option<GString> {
+        self.item_id.clone()
+    }
+
+    pub fn hidden_at(&self) -> Option<NodePath> {
+        self.hidden_at.clone()
+    }
+
     pub fn clear_item(&mut self) {
         self.set_item(None);
     }
 
     pub fn set_item(&mut self, item_id: Option<GString>) {
+        if let Some(old_hidden) = self.hidden_at.take() {
+            if let Some(mut hs) = self.base().try_get_node_as::<HidingSlot>(&old_hidden) {
+                hs.bind_mut().remove_occupant(&self.base().get_path());
+            }
+        }
+        self.rebuild_label(&item_id);
+        self.item_id = item_id;
+        self.refresh_border();
+    }
+
+    fn set_item_and_link(&mut self, item_id: Option<GString>, hidden_at: Option<NodePath>) {
+        self.rebuild_label(&item_id);
+        self.item_id = item_id;
+        self.hidden_at = hidden_at;
+        self.refresh_border();
+    }
+
+    pub fn set_hidden_link(&mut self, path: Option<NodePath>) {
+        self.hidden_at = path;
+        self.refresh_border();
+    }
+
+    fn rebuild_label(&mut self, item_id: &Option<GString>) {
         let count = self.base().get_child_count();
         for i in (0..count).rev() {
             if let Some(mut child) = self.base().get_child(i) {
@@ -98,21 +159,30 @@ impl ItemSlot {
             }
         }
 
-        self.item_id = item_id.clone();
-
         if let Some(id) = item_id {
             let mut label = Label::new_alloc();
-            label.set_text(&id);
+            label.set_text(id);
             self.base_mut().add_child(&label);
         }
     }
 
     pub fn set_highlighted(&mut self, on: bool) {
-        if on {
+        self.highlighted = on;
+        self.refresh_border();
+    }
+
+    fn refresh_border(&mut self) {
+        if self.highlighted {
             let mut style = StyleBoxFlat::new_gd();
             style.set_bg_color(Color::from_rgb(0.15, 0.15, 0.15));
             style.set_border_width_all(3);
             style.set_border_color(Color::from_rgb(0.2, 0.9, 0.2));
+            self.base_mut().add_theme_stylebox_override("panel", &style);
+        } else if self.hidden_at.is_some() {
+            let mut style = StyleBoxFlat::new_gd();
+            style.set_bg_color(Color::from_rgb(0.15, 0.15, 0.15));
+            style.set_border_width_all(2);
+            style.set_border_color(Color::from_rgb(0.3, 0.5, 0.9));
             self.base_mut().add_theme_stylebox_override("panel", &style);
         } else {
             self.base_mut().remove_theme_stylebox_override("panel");
@@ -132,6 +202,9 @@ impl ItemSlot {
         menu.add_item("Взаимодействовать");
         menu.add_item("Изучить");
         menu.add_item("Объединить");
+        if self.hidden_at.is_some() {
+            menu.add_item("Достать");
+        }
 
         let callable = self.base().callable("on_menu_id_pressed");
         menu.connect("id_pressed", &callable);
@@ -158,6 +231,15 @@ impl ItemSlot {
                     let path = self.base().get_path();
                     inventory.call("start_combine", &[item_id.to_variant(), path.to_variant()]);
                 }
+            }
+            3 => {
+                if let Some(old_hidden) = self.hidden_at.take() {
+                    if let Some(mut hs) = self.base().try_get_node_as::<HidingSlot>(&old_hidden) {
+                        hs.bind_mut().remove_occupant(&self.base().get_path());
+                    }
+                }
+                self.refresh_border();
+                godot_print!("Предмет возвращён в сумку");
             }
             _ => {}
         }
