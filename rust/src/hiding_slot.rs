@@ -103,6 +103,10 @@ impl HidingSlot {
         !self.occupants.is_empty()
     }
 
+    pub fn occupant_paths(&self) -> Vec<NodePath> {
+        self.occupants.clone()
+    }
+
     pub fn remove_occupant(&mut self, path: &NodePath) {
         self.occupants.retain(|p| p != path);
         self.refresh_children();

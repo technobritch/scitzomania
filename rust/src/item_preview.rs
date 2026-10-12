@@ -1,6 +1,4 @@
-
-use godot::classes::{SubViewportContainer, ISubViewportContainer, Node3D, MeshInstance3D, Mesh, InputEvent, InputEventMouseButton, InputEventMouseMotion};
-use godot::global::MouseButton;
+use godot::classes::{SubViewportContainer, ISubViewportContainer, Node3D, MeshInstance3D, Mesh};
 use godot::prelude::*;
 
 #[derive(GodotClass)]
@@ -8,38 +6,29 @@ use godot::prelude::*;
 pub struct ItemPreview {
     base: Base<SubViewportContainer>,
     rotating: bool,
-    dragging: bool,
+    time: f32,
 }
 
 #[godot_api]
 impl ISubViewportContainer for ItemPreview {
     fn init(base: Base<SubViewportContainer>) -> Self {
-        Self { base, rotating: false, dragging: false }
+        Self { base, rotating: false, time: 0.0 }
     }
 
     fn process(&mut self, delta: f64) {
-        if self.rotating && !self.dragging {
-            if let Some(mut pivot) = self.base().try_get_node_as::<Node3D>("SubViewport/Pivot") {
-                pivot.rotate_y(delta as f32 * 0.6);
-            }
-        }
-    }
-
-    fn gui_input(&mut self, event: Gd<InputEvent>) {
-        if let Ok(mb) = event.clone().try_cast::<InputEventMouseButton>() {
-            if mb.get_button_index() == MouseButton::LEFT {
-                self.dragging = mb.is_pressed();
-            }
+        if !self.rotating {
+            return;
         }
 
-        if self.dragging {
-            if let Ok(motion) = event.try_cast::<InputEventMouseMotion>() {
-                let rel = motion.get_relative();
-                if let Some(mut pivot) = self.base().try_get_node_as::<Node3D>("SubViewport/Pivot") {
-                    pivot.rotate_y(rel.x * 0.01);
-                    pivot.rotate_x(rel.y * 0.01);
-                }
-            }
+        self.time += delta as f32;
+
+        if let Some(mut pivot) = self.base().try_get_node_as::<Node3D>("SubViewport/Pivot") {
+            pivot.rotate_y(delta as f32 * 1.0);
+
+            let bob = (self.time * 1.8).sin() * 0.08;
+            let mut pos = pivot.get_position();
+            pos.y = bob;
+            pivot.set_position(pos);
         }
     }
 }

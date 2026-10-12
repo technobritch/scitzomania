@@ -4,7 +4,7 @@ use godot::prelude::*;
 use crate::item_slot::ItemSlot;
 use crate::hiding_slot::HidingSlot;
 use crate::item_preview::ItemPreview;
-use crate::item_database;
+use crate::item_database::{self, ItemSize};
 
 #[derive(GodotClass)]
 #[class(base=Control)]
@@ -23,6 +23,12 @@ impl IControl for Inventory {
             selected_slot: None,
             selected_hiding_slot: None,
             combine_source: None,
+        }
+    }
+
+    fn process(&mut self, _delta: f64) {
+        if self.base().is_visible() {
+            self.refresh_risk_summary();
         }
     }
 
@@ -60,7 +66,7 @@ impl Inventory {
     }
 
     fn place_item_in_first_empty_slot(&mut self, item_id: GString) -> bool {
-        let Some(slots) = self.base().try_get_node_as::<GridContainer>("CenterContainer/slots") else {
+        let Some(slots) = self.base().try_get_node_as::<GridContainer>("%slots") else {
             return false;
         };
 
@@ -145,6 +151,14 @@ impl Inventory {
         godot_print!("Выберите второй предмет для объединения");
     }
 
+    fn size_text(size: &ItemSize) -> &'static str {
+        match size {
+            ItemSize::Small => "Маленький",
+            ItemSize::Medium => "Средний",
+            ItemSize::Large => "Большой",
+        }
+    }
+
     fn update_preview_panel(&mut self, item_id: &GString, hiding_path: Option<NodePath>) {
         let Some(data) = item_database::load_item(&item_id.to_string()) else {
             return;
@@ -160,11 +174,14 @@ impl Inventory {
         if let Some(mut label) = self.base().try_get_node_as::<Label>("%selected_item_name") {
             label.set_text(&data.name);
         }
-        if let Some(mut label) = self.base().try_get_node_as::<Label>("%selected_item_class") {
-            label.set_text(&data.item_class);
-        }
         if let Some(mut label) = self.base().try_get_node_as::<Label>("%selected_item_description") {
             label.set_text(&data.description);
+        }
+        if let Some(mut label) = self.base().try_get_node_as::<Label>("%selected_item_class") {
+            label.set_text(&GString::from(format!("Класс: {}", data.item_class).as_str()));
+        }
+        if let Some(mut label) = self.base().try_get_node_as::<Label>("%selected_item_size") {
+            label.set_text(&GString::from(format!("Размер: {}", Self::size_text(&data.size)).as_str()));
         }
 
         let (location_text, detection_text) = match hiding_path {
@@ -183,10 +200,76 @@ impl Inventory {
         };
 
         if let Some(mut label) = self.base().try_get_node_as::<Label>("%selected_item_location") {
-            label.set_text(&GString::from(location_text.as_str()));
+            label.set_text(&GString::from(format!("Где: {}", location_text).as_str()));
         }
         if let Some(mut label) = self.base().try_get_node_as::<Label>("%selected_item_detection") {
             label.set_text(&GString::from(detection_text.as_str()));
+        }
+    }
+
+    fn refresh_risk_summary(&mut self) {
+        let Some(body_slots) = self.base().try_get_node_as::<Node>("%BodySlots") else {
+            return;
+        };
+
+        let mut suspicious_names: Vec<String> = Vec::new();
+        let mut hidden_count = 0;
+        let mut detection_sum = 0.0f32;
+        let mut detection_count = 0;
+
+        let count = body_slots.get_child_count();
+        for i in 0..count {
+            let Some(child) = body_slots.get_child(i) else { continue };
+            let Ok(hiding_slot) = child.try_cast::<HidingSlot>() else { continue };
+            let b = hiding_slot.bind();
+            let occupants = b.occupant_paths();
+            let detection = b.detection_chance;
+            drop(b);
+
+            for occ in occupants {
+                hidden_count += 1;
+                detection_sum += detection;
+                detection_count += 1;
+
+                if let Some(item_slot) = self.base().try_get_node_as::<ItemSlot>(&occ) {
+                    if let Some(item_id) = item_slot.bind().item_id() {
+                        if let Some(data) = item_database::load_item(&item_id.to_string()) {
+                            if data.item_class.to_string() != "I" {
+                                suspicious_names.push(data.name.to_string());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        let suspicious_text = if suspicious_names.is_empty() {
+            "нет".to_string()
+        } else {
+            suspicious_names.join(", ")
+        };
+
+        let overall_risk = if detection_count == 0 {
+            "—".to_string()
+        } else {
+            let avg = detection_sum / detection_count as f32;
+            if avg < 0.4 {
+                "Низкая".to_string()
+            } else if avg < 0.65 {
+                "Средняя".to_string()
+            } else {
+                "Высокая".to_string()
+            }
+        };
+
+        if let Some(mut label) = self.base().try_get_node_as::<Label>("%suspicious_items_label") {
+            label.set_text(&GString::from(format!("Подозрительные предметы: {}", suspicious_text).as_str()));
+        }
+        if let Some(mut label) = self.base().try_get_node_as::<Label>("%hidden_count_label") {
+            label.set_text(&GString::from(format!("Спрятано: {} предметов", hidden_count).as_str()));
+        }
+        if let Some(mut label) = self.base().try_get_node_as::<Label>("%overall_detection_label") {
+            label.set_text(&GString::from(format!("Общая обнаруживаемость: {}", overall_risk).as_str()));
         }
     }
 }

@@ -4,6 +4,7 @@
 custom_minimum_size = Vector2(48, 48)
 offset_right = 128.0
 offset_bottom = 128.0
+mouse_filter = 2
 
 [node name="SubViewport" type="SubViewport" parent="." unique_id=404268810]
 own_world_3d = true

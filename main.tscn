@@ -1,5 +1,9 @@
 [gd_scene format=3 uid="uid://8pbyswy5jkrl"]
 
+[ext_resource type="Texture2D" uid="uid://t6dky0l7rtij" path="res://ui/body_silhouette.png" id="1_0xm2m"]
+[ext_resource type="Shader" uid="uid://ymd400surn5e" path="res://shaders/background_blur.gdshader" id="1_h2yge"]
+[ext_resource type="PackedScene" uid="uid://db5ge8mejaltq" path="res://item_preview.tscn" id="2_h2yge"]
+
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_7dm0k"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7dm0k"]
@@ -36,6 +40,16 @@ albedo_color = Color(0.12941177, 1, 1, 1)
 [sub_resource type="BoxMesh" id="BoxMesh_1bvp3"]
 material = SubResource("StandardMaterial3D_h2yge")
 size = Vector3(1, 2, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1bvp3"]
+shader = ExtResource("1_h2yge")
+shader_parameter/blur_lod = 2.5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1bvp3"]
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
 
 [node name="Node3D" type="Node3D" unique_id=1490640388]
 
@@ -136,55 +150,291 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="CenterContainer" type="CenterContainer" parent="UI/inventoryui/inventory" unique_id=1777197719]
-layout_mode = 0
-offset_left = 57.0
-offset_top = 38.0
-offset_right = 325.0
-offset_bottom = 170.0
+[node name="BackgroundBlur" type="ColorRect" parent="UI/inventoryui/inventory" unique_id=1175053465]
+material = SubResource("ShaderMaterial_1bvp3")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
-[node name="slots" type="GridContainer" parent="UI/inventoryui/inventory/CenterContainer" unique_id=505715746]
+[node name="BackgroundDim" type="ColorRect" parent="UI/inventoryui/inventory" unique_id=1198771713]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.50980395)
+
+[node name="OuterMargin" type="MarginContainer" parent="UI/inventoryui/inventory" unique_id=538505664]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="MainLayout" type="HBoxContainer" parent="UI/inventoryui/inventory/OuterMargin" unique_id=1501734700]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="LeftColumn" type="VBoxContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout" unique_id=1231891827]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CenterContainer" type="CenterContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn" unique_id=1777197719]
+layout_mode = 2
+
+[node name="slots" type="GridContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer" unique_id=505715746]
+unique_name_in_owner = true
 layout_mode = 2
 columns = 4
 
-[node name="Panel" type="ItemSlot" parent="UI/inventoryui/inventory/CenterContainer/slots" unique_id=188680291]
+[node name="Panel" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=188680291]
 clip_contents = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Panel2" type="ItemSlot" parent="UI/inventoryui/inventory/CenterContainer/slots" unique_id=2081340725]
+[node name="Panel2" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=2081340725]
 clip_contents = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Panel3" type="ItemSlot" parent="UI/inventoryui/inventory/CenterContainer/slots" unique_id=857489095]
+[node name="Panel3" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=857489095]
 clip_contents = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Panel4" type="ItemSlot" parent="UI/inventoryui/inventory/CenterContainer/slots" unique_id=1618052936]
+[node name="Panel4" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=1618052936]
 clip_contents = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Panel5" type="ItemSlot" parent="UI/inventoryui/inventory/CenterContainer/slots" unique_id=1676938359]
+[node name="Panel5" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=1676938359]
 clip_contents = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Panel6" type="ItemSlot" parent="UI/inventoryui/inventory/CenterContainer/slots" unique_id=1334167662]
+[node name="Panel6" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=1334167662]
 clip_contents = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Panel7" type="ItemSlot" parent="UI/inventoryui/inventory/CenterContainer/slots" unique_id=1961050727]
+[node name="Panel7" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=1961050727]
 clip_contents = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Panel8" type="ItemSlot" parent="UI/inventoryui/inventory/CenterContainer/slots" unique_id=1932897413]
+[node name="Panel8" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=1932897413]
 clip_contents = true
 custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="RiskSummary" type="VBoxContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn" unique_id=1054196873]
+layout_mode = 2
+
+[node name="SuspiciousItemsLabel" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/RiskSummary" unique_id=677975122]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="HiddenCountLabel" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/RiskSummary" unique_id=322103809]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="OverallDetectionLabel" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/RiskSummary" unique_id=1624420880]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="BodyColumn" type="CenterContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout" unique_id=96960148]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BodySlots" type="Control" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/BodyColumn" unique_id=1803353122]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 450)
+layout_mode = 2
+
+[node name="SilhouetteImage" type="TextureRect" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/BodyColumn/BodySlots" unique_id=2116772576]
+custom_minimum_size = Vector2(300, 450)
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+texture = ExtResource("1_0xm2m")
+stretch_mode = 5
+
+[node name="Collar" type="HidingSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/BodyColumn/BodySlots" unique_id=202118085]
+capacity_units = 1
+detection_chance = 0.75
+display_name = "За воротником"
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 0
+offset_left = 138.0
+offset_top = 85.0
+offset_right = 178.0
+offset_bottom = 125.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_1bvp3")
+
+[node name="Waistband" type="HidingSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/BodyColumn/BodySlots" unique_id=2129786847]
+capacity_units = 4
+detection_chance = 0.25
+display_name = "За поясом"
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 0
+offset_left = 138.0
+offset_top = 182.0
+offset_right = 178.0
+offset_bottom = 222.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_1bvp3")
+
+[node name="LeftPocket" type="HidingSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/BodyColumn/BodySlots" unique_id=1110697803]
+detection_chance = 0.6
+display_name = "Левый карман"
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 0
+offset_left = 114.0
+offset_top = 211.0
+offset_right = 154.0
+offset_bottom = 251.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_1bvp3")
+
+[node name="RightPocket" type="HidingSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/BodyColumn/BodySlots" unique_id=1087404166]
+detection_chance = 0.6
+display_name = "Правый карман"
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 0
+offset_left = 161.0
+offset_top = 211.0
+offset_right = 201.0
+offset_bottom = 251.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_1bvp3")
+
+[node name="LeftBoot" type="HidingSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/BodyColumn/BodySlots" unique_id=802295903]
+capacity_units = 1
+detection_chance = 0.25
+display_name = "Левый ботинок"
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 0
+offset_left = 101.0
+offset_top = 354.0
+offset_right = 141.0
+offset_bottom = 394.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_1bvp3")
+
+[node name="RightBoot" type="HidingSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/BodyColumn/BodySlots" unique_id=1257286604]
+capacity_units = 1
+detection_chance = 0.25
+display_name = "Правый ботинок"
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 0
+offset_left = 151.0
+offset_top = 354.0
+offset_right = 191.0
+offset_bottom = 394.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_1bvp3")
+
+[node name="RightHandWaistBand" type="HidingSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/BodyColumn/BodySlots" unique_id=1376800198]
+capacity_units = 1
+detection_chance = 0.75
+display_name = "Правый рукав"
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 0
+offset_left = 177.0
+offset_top = 204.0
+offset_right = 217.0
+offset_bottom = 244.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_1bvp3")
+
+[node name="LeftHandWaistBand" type="HidingSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/BodyColumn/BodySlots" unique_id=682892786]
+capacity_units = 1
+detection_chance = 0.75
+display_name = "Левый рукав"
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 0
+offset_left = 66.0
+offset_top = 204.0
+offset_right = 106.0
+offset_bottom = 244.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_1bvp3")
+
+[node name="RightColumn" type="MarginContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout" unique_id=330431291]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="RightStack" type="VBoxContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn" unique_id=414102544]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="NameAndPreviewBox" type="PanelContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack" unique_id=810596008]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 3.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/NameAndPreviewBox" unique_id=201750673]
+layout_mode = 2
+
+[node name="SelectedItemName" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/NameAndPreviewBox/VBoxContainer" unique_id=206229269]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SelectedItemPreview" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/NameAndPreviewBox/VBoxContainer" unique_id=200369458 instance=ExtResource("2_h2yge")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="DescriptionBox" type="PanelContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack" unique_id=1485464584]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/DescriptionBox" unique_id=727363056]
+layout_mode = 2
+
+[node name="DescTitle" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/DescriptionBox/VBoxContainer" unique_id=58379606]
+layout_mode = 2
+text = "Описание"
+
+[node name="SelectedItemDescription" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/DescriptionBox/VBoxContainer/DescTitle" unique_id=1615057050]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+autowrap_mode = 2
+
+[node name="StatsBox" type="PanelContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack" unique_id=1183150230]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/StatsBox" unique_id=1732639237]
+layout_mode = 2
+
+[node name="SelectedItemDetection" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/StatsBox/VBoxContainer" unique_id=2020596473]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SelectedItemClass" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/StatsBox/VBoxContainer" unique_id=1223189632]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SelectedItemLocation" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/StatsBox/VBoxContainer" unique_id=2127662704]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SelectedItemSize" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/StatsBox/VBoxContainer" unique_id=1884225523]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="DialogueUI" type="CanvasLayer" parent="UI" unique_id=51146077]
