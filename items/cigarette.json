@@ -1,0 +1,10 @@
+{
+  "name": "Сигареты",
+  "description": "Здесь это деньги.",
+  "shape": "cylinder",
+  "color": "#e8e0c8",
+  "size": "small",
+  "class": "I",
+  "stackable": true,
+  "combinations": []
+}

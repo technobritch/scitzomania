@@ -8,6 +8,9 @@ pub struct DialogueTrigger {
     base: Base<StaticBody3D>,
     #[export]
     pub dialogue_path: GString,
+    /// Если заполнено - этот NPC торговец (путь к файлу магазина, например res://shops/ivan.json)
+    #[export]
+    pub shop_path: GString,
 }
 
 #[godot_api]
@@ -16,6 +19,7 @@ impl IStaticBody3D for DialogueTrigger {
         Self {
             base,
             dialogue_path: GString::from("res://dialogues/example.json"),
+            shop_path: GString::new(),
         }
     }
 }

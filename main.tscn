@@ -1,8 +1,11 @@
 [gd_scene format=3 uid="uid://8pbyswy5jkrl"]
 
-[ext_resource type="Texture2D" uid="uid://t6dky0l7rtij" path="res://ui/body_silhouette.png" id="1_0xm2m"]
 [ext_resource type="Shader" uid="uid://ymd400surn5e" path="res://shaders/background_blur.gdshader" id="1_h2yge"]
+[ext_resource type="Texture2D" uid="uid://bjfvvjfa5lmg" path="res://ui/body.png" id="2_1bvp3"]
 [ext_resource type="PackedScene" uid="uid://db5ge8mejaltq" path="res://item_preview.tscn" id="2_h2yge"]
+[ext_resource type="PackedScene" uid="uid://duuj1744lbhem" path="res://assets/diary/pbr_dark_diary.glb" id="4_272bh"]
+[ext_resource type="PackedScene" uid="uid://dnng46vaau7or" path="res://assets/knife/knife.glb" id="6_kek77"]
+[ext_resource type="PackedScene" uid="uid://046i2ig5sdqr" path="res://assets/pills/pills.glb" id="7_4c57u"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_7dm0k"]
 
@@ -10,26 +13,13 @@
 albedo_color = Color(1, 0.85882354, 1, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_7dm0k"]
-size = Vector2(50, 50)
+size = Vector2(200, 200)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ig7tw"]
-size = Vector3(50, 0.1, 50)
+size = Vector3(200, 0.1, 200)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_7dm0k"]
-size = Vector3(0.4, 0.4, 0.4)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ig7tw"]
-albedo_color = Color(0.94739705, 0.8286374, 0.3280679, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_0xm2m"]
-size = Vector3(0.4, 0.4, 0.4)
-
-[sub_resource type="SphereShape3D" id="SphereShape3D_7dm0k"]
-
-[sub_resource type="SphereMesh" id="SphereMesh_ig7tw"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0xm2m"]
-albedo_color = Color(0.8437476, 0.51459557, 0.66093916, 1)
+[sub_resource type="BoxMesh" id="BoxMesh_y3ege"]
+size = Vector3(0.09, 0.03, 0.06)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_0xm2m"]
 size = Vector3(1, 2, 1)
@@ -46,6 +36,22 @@ shader = ExtResource("1_h2yge")
 shader_parameter/blur_lod = 2.5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1bvp3"]
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y3ege"]
+content_margin_left = 20.0
+content_margin_top = 20.0
+content_margin_right = 20.0
+content_margin_bottom = 20.0
+bg_color = Color(0.09019608, 0.09019608, 0.10980392, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.33333334, 0.33333334, 0.37254903, 1)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
@@ -77,58 +83,46 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
 shape = SubResource("BoxShape3D_ig7tw")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="world" unique_id=229861602]
-transform = Transform3D(1, 0, 0, 0, 0.7071068, 0.7071068, 0, -0.7071068, 0.7071068, 0, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 0.041038603, 0.99915767, 0, -0.99915767, 0.041038603, 0, 0, 0)
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="world" unique_id=1535021167]
 
 [node name="Interactables" type="Node" parent="." unique_id=1432592175]
 
-[node name="Item" type="StaticBody3D" parent="Interactables" unique_id=380966667 groups=["item"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2563442, 0)
+[node name="Book" type="Pickupable" parent="Interactables" unique_id=33395627]
+item_id = "book"
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactables/Item" unique_id=1171365161]
-shape = SubResource("BoxShape3D_7dm0k")
-debug_color = Color(0.29166692, 0.5728589, 0.7159297, 0.41960785)
+[node name="Sketchfab_Scene" parent="Interactables/Book" unique_id=1646885763 instance=ExtResource("4_272bh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3918099, -7.1525574e-07, 0.46410012)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Interactables/Item" unique_id=1978084825]
-material_override = SubResource("StandardMaterial3D_ig7tw")
-mesh = SubResource("BoxMesh_0xm2m")
+[node name="Knife" type="Pickupable" parent="Interactables" unique_id=2142103949]
+item_id = "knife"
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 
-[node name="Item2" type="StaticBody3D" parent="Interactables" unique_id=917779823 groups=["item"]]
-transform = Transform3D(0.9433617, 0, 0.331766, 0, 1, 0, -0.331766, 0, 0.9433617, 1.2987616, 0.2563442, 0)
+[node name="Sketchfab_Scene2" parent="Interactables/Knife" unique_id=2056537557 instance=ExtResource("6_kek77")]
+transform = Transform3D(0.19428803, 0.0016236948, -0.047429208, -0.0015915929, 0.19999342, 0.00032682062, 0.047430295, 5.9950504e-05, 0.19429453, -0.7245339, 0.056803137, 0.5070458)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactables/Item2" unique_id=782505931]
-shape = SubResource("BoxShape3D_7dm0k")
-debug_color = Color(0.29166692, 0.5728589, 0.7159297, 0.41960785)
+[node name="PillJar" type="Pickupable" parent="Interactables" unique_id=782313608]
+item_id = "pills"
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Interactables/Item2" unique_id=1785852595]
-material_override = SubResource("StandardMaterial3D_ig7tw")
-mesh = SubResource("BoxMesh_0xm2m")
+[node name="Sketchfab_Scene3" parent="Interactables/PillJar" unique_id=2103536521 instance=ExtResource("7_4c57u")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6267451, 0.050760776, 0.93153536)
 
-[node name="Item3" type="StaticBody3D" parent="Interactables" unique_id=382990480 groups=["item"]]
-transform = Transform3D(0.6356741, 0, -0.7719575, 0, 1, 0, 0.7719575, 0, 0.6356741, 0.7645432, 0.2563442, -1.4052026)
+[node name="Cigarettes" type="Pickupable" parent="Interactables" unique_id=1149719969]
+item_id = "cigarette"
+amount = 8
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactables/Item3" unique_id=320021160]
-shape = SubResource("BoxShape3D_7dm0k")
-debug_color = Color(0.29166692, 0.5728589, 0.7159297, 0.41960785)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Interactables/Item3" unique_id=1293680872]
-material_override = SubResource("StandardMaterial3D_ig7tw")
-mesh = SubResource("BoxMesh_0xm2m")
-
-[node name="item4" type="StaticBody3D" parent="Interactables" unique_id=56268712 groups=["item"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.2215927, 0.49152434, -0.49315012)
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactables/item4" unique_id=383548018]
-shape = SubResource("SphereShape3D_7dm0k")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Interactables/item4" unique_id=887214446]
-mesh = SubResource("SphereMesh_ig7tw")
-surface_material_override/0 = SubResource("StandardMaterial3D_0xm2m")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Interactables/Cigarettes" unique_id=1780212912]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5870094, 0.35113168, 0.8061919)
+mesh = SubResource("BoxMesh_y3ege")
 
 [node name="NPCs" type="Node" parent="." unique_id=2063510539]
 
 [node name="DialogueObject" type="DialogueTrigger" parent="NPCs" unique_id=484507837 groups=["dialogue"]]
+dialogue_path = "res://dialogues/trader.json"
+shop_path = "res://shops/ivan.json"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0168645, 2.9110513)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="NPCs/DialogueObject" unique_id=63691500]
@@ -192,50 +186,61 @@ size_flags_horizontal = 3
 
 [node name="CenterContainer" type="CenterContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn" unique_id=1777197719]
 layout_mode = 2
+size_flags_horizontal = 0
 
 [node name="slots" type="GridContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer" unique_id=505715746]
 unique_name_in_owner = true
 layout_mode = 2
-columns = 4
+columns = 5
 
 [node name="Panel" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=188680291]
-clip_contents = true
 custom_minimum_size = Vector2(64, 64)
+clip_contents = true
 layout_mode = 2
 
 [node name="Panel2" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=2081340725]
-clip_contents = true
 custom_minimum_size = Vector2(64, 64)
+clip_contents = true
 layout_mode = 2
 
 [node name="Panel3" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=857489095]
-clip_contents = true
 custom_minimum_size = Vector2(64, 64)
+clip_contents = true
 layout_mode = 2
 
 [node name="Panel4" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=1618052936]
-clip_contents = true
 custom_minimum_size = Vector2(64, 64)
+clip_contents = true
 layout_mode = 2
 
 [node name="Panel5" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=1676938359]
-clip_contents = true
 custom_minimum_size = Vector2(64, 64)
+clip_contents = true
 layout_mode = 2
 
 [node name="Panel6" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=1334167662]
-clip_contents = true
 custom_minimum_size = Vector2(64, 64)
+clip_contents = true
 layout_mode = 2
 
 [node name="Panel7" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=1961050727]
-clip_contents = true
 custom_minimum_size = Vector2(64, 64)
+clip_contents = true
 layout_mode = 2
 
 [node name="Panel8" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=1932897413]
-clip_contents = true
 custom_minimum_size = Vector2(64, 64)
+clip_contents = true
+layout_mode = 2
+
+[node name="Panel9" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=543669826]
+custom_minimum_size = Vector2(64, 64)
+clip_contents = true
+layout_mode = 2
+
+[node name="Panel10" type="ItemSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn/CenterContainer/slots" unique_id=988384979]
+custom_minimum_size = Vector2(64, 64)
+clip_contents = true
 layout_mode = 2
 
 [node name="RiskSummary" type="VBoxContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/LeftColumn" unique_id=1054196873]
@@ -268,11 +273,13 @@ layout_mode = 2
 [node name="SilhouetteImage" type="TextureRect" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/BodyColumn/BodySlots" unique_id=2116772576]
 custom_minimum_size = Vector2(300, 450)
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = 13.0
+offset_top = -105.0
+offset_right = 313.0
+offset_bottom = 507.0
 mouse_filter = 2
-texture = ExtResource("1_0xm2m")
-stretch_mode = 5
+texture = ExtResource("2_1bvp3")
+stretch_mode = 3
 
 [node name="Collar" type="HidingSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/BodyColumn/BodySlots" unique_id=202118085]
 capacity_units = 1
@@ -281,9 +288,9 @@ display_name = "За воротником"
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 0
 offset_left = 138.0
-offset_top = 85.0
+offset_top = 30.0
 offset_right = 178.0
-offset_bottom = 125.0
+offset_bottom = 70.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_1bvp3")
 
 [node name="Waistband" type="HidingSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/BodyColumn/BodySlots" unique_id=2129786847]
@@ -293,9 +300,9 @@ display_name = "За поясом"
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 0
 offset_left = 138.0
-offset_top = 182.0
+offset_top = 155.0
 offset_right = 178.0
-offset_bottom = 222.0
+offset_bottom = 195.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_1bvp3")
 
 [node name="LeftPocket" type="HidingSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/BodyColumn/BodySlots" unique_id=1110697803]
@@ -327,9 +334,9 @@ display_name = "Левый ботинок"
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 0
 offset_left = 101.0
-offset_top = 354.0
+offset_top = 430.0
 offset_right = 141.0
-offset_bottom = 394.0
+offset_bottom = 470.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_1bvp3")
 
 [node name="RightBoot" type="HidingSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/BodyColumn/BodySlots" unique_id=1257286604]
@@ -338,10 +345,10 @@ detection_chance = 0.25
 display_name = "Правый ботинок"
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 0
-offset_left = 151.0
-offset_top = 354.0
-offset_right = 191.0
-offset_bottom = 394.0
+offset_left = 181.0
+offset_top = 430.0
+offset_right = 221.0
+offset_bottom = 470.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_1bvp3")
 
 [node name="RightHandWaistBand" type="HidingSlot" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/BodyColumn/BodySlots" unique_id=1376800198]
@@ -350,9 +357,9 @@ detection_chance = 0.75
 display_name = "Правый рукав"
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 0
-offset_left = 177.0
+offset_left = 211.0
 offset_top = 204.0
-offset_right = 217.0
+offset_right = 251.0
 offset_bottom = 244.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_1bvp3")
 
@@ -406,13 +413,12 @@ layout_mode = 2
 [node name="DescTitle" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/DescriptionBox/VBoxContainer" unique_id=58379606]
 layout_mode = 2
 text = "Описание"
+autowrap_mode = 3
 
-[node name="SelectedItemDescription" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/DescriptionBox/VBoxContainer/DescTitle" unique_id=1615057050]
+[node name="SelectedItemDescription" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/DescriptionBox/VBoxContainer" unique_id=1615057050]
 unique_name_in_owner = true
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 23.0
-autowrap_mode = 2
+layout_mode = 2
+autowrap_mode = 3
 
 [node name="StatsBox" type="PanelContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack" unique_id=1183150230]
 layout_mode = 2
@@ -421,21 +427,25 @@ size_flags_vertical = 3
 [node name="VBoxContainer" type="VBoxContainer" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/StatsBox" unique_id=1732639237]
 layout_mode = 2
 
-[node name="SelectedItemDetection" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/StatsBox/VBoxContainer" unique_id=2020596473]
-unique_name_in_owner = true
-layout_mode = 2
-
 [node name="SelectedItemClass" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/StatsBox/VBoxContainer" unique_id=1223189632]
 unique_name_in_owner = true
 layout_mode = 2
-
-[node name="SelectedItemLocation" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/StatsBox/VBoxContainer" unique_id=2127662704]
-unique_name_in_owner = true
-layout_mode = 2
+autowrap_mode = 3
 
 [node name="SelectedItemSize" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/StatsBox/VBoxContainer" unique_id=1884225523]
 unique_name_in_owner = true
 layout_mode = 2
+autowrap_mode = 3
+
+[node name="SelectedItemLocation" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/StatsBox/VBoxContainer" unique_id=2127662704]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="SelectedItemDetection" type="Label" parent="UI/inventoryui/inventory/OuterMargin/MainLayout/RightColumn/RightStack/StatsBox/VBoxContainer" unique_id=2020596473]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
 
 [node name="DialogueUI" type="CanvasLayer" parent="UI" unique_id=51146077]
 
@@ -489,6 +499,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = -43.0
+offset_right = 6.0
+offset_bottom = -43.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -498,3 +512,128 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(6, 6)
 layout_mode = 2
 mouse_filter = 2
+
+[node name="ShopLayer" type="CanvasLayer" parent="UI" unique_id=1906785415]
+layer = 10
+
+[node name="ShopUI" type="ShopUi" parent="UI/ShopLayer" unique_id=1287669421]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BackgroundBlur" type="ColorRect" parent="UI/ShopLayer/ShopUI" unique_id=1799945410]
+material = SubResource("ShaderMaterial_1bvp3")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BackgroundDim" type="ColorRect" parent="UI/ShopLayer/ShopUI" unique_id=1294802416]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.50980395)
+
+[node name="OuterMargin" type="MarginContainer" parent="UI/ShopLayer/ShopUI" unique_id=925324460]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 160
+theme_override_constants/margin_top = 80
+theme_override_constants/margin_right = 160
+theme_override_constants/margin_bottom = 80
+
+[node name="Window" type="PanelContainer" parent="UI/ShopLayer/ShopUI/OuterMargin" unique_id=1316715623]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_y3ege")
+
+[node name="Content" type="VBoxContainer" parent="UI/ShopLayer/ShopUI/OuterMargin/Window" unique_id=423033678]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="HBoxContainer" parent="UI/ShopLayer/ShopUI/OuterMargin/Window/Content" unique_id=1095026490]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ShopTitle" type="Label" parent="UI/ShopLayer/ShopUI/OuterMargin/Window/Content/Header" unique_id=1734284940]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+
+[node name="ShopCurrency" type="Label" parent="UI/ShopLayer/ShopUI/OuterMargin/Window/Content/Header" unique_id=671066138]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="CloseButton" type="Button" parent="UI/ShopLayer/ShopUI/OuterMargin/Window/Content/Header" unique_id=1427362123]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Закрыть
+"
+
+[node name="Columns" type="HBoxContainer" parent="UI/ShopLayer/ShopUI/OuterMargin/Window/Content" unique_id=1679550489]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 24
+
+[node name="BuyColumn" type="VBoxContainer" parent="UI/ShopLayer/ShopUI/OuterMargin/Window/Content/Columns" unique_id=1144907679]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="UI/ShopLayer/ShopUI/OuterMargin/Window/Content/Columns/BuyColumn" unique_id=798846452]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Купить"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="UI/ShopLayer/ShopUI/OuterMargin/Window/Content/Columns/BuyColumn" unique_id=1867789706]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="BuyList" type="VBoxContainer" parent="UI/ShopLayer/ShopUI/OuterMargin/Window/Content/Columns/BuyColumn/ScrollContainer" unique_id=677128621]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="SellColumn" type="VBoxContainer" parent="UI/ShopLayer/ShopUI/OuterMargin/Window/Content/Columns" unique_id=1868706775]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="UI/ShopLayer/ShopUI/OuterMargin/Window/Content/Columns/SellColumn" unique_id=649690157]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Продать"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="UI/ShopLayer/ShopUI/OuterMargin/Window/Content/Columns/SellColumn" unique_id=25878704]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="SellList" type="VBoxContainer" parent="UI/ShopLayer/ShopUI/OuterMargin/Window/Content/Columns/SellColumn/ScrollContainer" unique_id=267195192]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ShopStatus" type="Label" parent="UI/ShopLayer/ShopUI/OuterMargin/Window/Content" unique_id=57192256]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8235294, 0.2901961, 1)
+horizontal_alignment = 1

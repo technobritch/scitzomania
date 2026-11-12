@@ -1,0 +1,21 @@
+{
+  "start": "hello",
+  "nodes": {
+    "hello": {
+      "speaker": "Иван",
+      "text": "Тихо. Чего надо?",
+      "choices": [
+        { "text": "Посмотреть, что у тебя есть", "action": "shop", "next": "" },
+        { "text": "Мне нужны таблетки", "sets_flag": "ivan_pills_unlocked", "next": "pills" },
+        { "text": "Ничего", "next": "" }
+      ]
+    },
+    "pills": {
+      "speaker": "Иван",
+      "text": "Тише ты. Найдётся. Смотри.",
+      "choices": [
+        { "text": "Показывай", "action": "shop", "next": "" }
+      ]
+    }
+  }
+}

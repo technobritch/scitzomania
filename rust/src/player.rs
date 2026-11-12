@@ -1,12 +1,18 @@
 use godot::classes::{
     CharacterBody3D, ICharacterBody3D, Camera3D, Input, ProjectSettings,
-    InputEvent, InputEventMouseMotion, PhysicsRayQueryParameters3D, Node, ColorRect,
+    InputEvent, InputEventMouseMotion, PhysicsRayQueryParameters3D, Node, ColorRect, Control,
 };
 use godot::classes::input::MouseMode;
 use godot::prelude::*;
 use crate::dialogue_box::DialogueBox;
 use crate::dialogue_trigger::DialogueTrigger;
 use crate::pickupable::Pickupable;
+use crate::shop_ui::ShopUi;
+
+/// Как далеко от камеры игрок может взаимодействовать (в метрах)
+const INTERACT_DISTANCE: f32 = 4.0;
+/// true - в Output печатается, во что попадает луч прицела (для отладки)
+const DEBUG_RAY: bool = true;
 
 #[derive(GodotClass)]
 #[class(base=CharacterBody3D)]
@@ -16,6 +22,7 @@ struct Player {
     jump_velocity: f32,
     mouse_sensitivity: f32,
     captured: bool,
+    last_target: String,
 }
 
 #[godot_api]
@@ -27,18 +34,23 @@ impl ICharacterBody3D for Player {
             jump_velocity: 4.5,
             mouse_sensitivity: 0.003,
             captured: false,
+            last_target: String::new(),
         }
     }
 
     fn ready(&mut self) {}
 
     fn unhandled_input(&mut self, event: Gd<InputEvent>) {
+        if self.is_inventory_open() || self.is_shop_open() {
+            return;
+        }
+
         if !self.captured {
             Input::singleton().set_mouse_mode(MouseMode::CAPTURED);
             self.captured = true;
         }
 
-        if self.is_dialogue_active() {
+        if self.is_dialogue_box_active() {
             if event.is_action_pressed("ui_up") {
                 if let Some(mut dialogue_box) = self.base().try_get_node_as::<DialogueBox>("%DialogueBox") {
                     dialogue_box.bind_mut().move_selection(-1);
@@ -86,7 +98,7 @@ impl ICharacterBody3D for Player {
     }
 
     fn physics_process(&mut self, delta: f64) {
-        if self.is_dialogue_active() {
+        if self.is_dialogue_active() || self.is_inventory_open() {
             self.base_mut().set_velocity(Vector3::ZERO);
             self.base_mut().move_and_slide();
             self.update_crosshair();
@@ -135,22 +147,56 @@ impl Player {
     fn is_on_floor_now(&self) -> bool {
         self.base().is_on_floor()
     }
-  #[func]
+
+    #[func]
     fn is_dialogue_active(&self) -> bool {
+        // Любое окно, которое должно остановить игрока: диалог или магазин
+        self.is_dialogue_box_active() || self.is_shop_open()
+    }
+
+    fn is_dialogue_box_active(&self) -> bool {
         self.base()
             .try_get_node_as::<DialogueBox>("%DialogueBox")
             .map(|d| d.bind().is_active())
             .unwrap_or(false)
     }
 
+    fn is_shop_open(&self) -> bool {
+        self.base()
+            .try_get_node_as::<Control>("%ShopUI")
+            .map(|c| c.is_visible())
+            .unwrap_or(false)
+    }
+
+    fn is_inventory_open(&self) -> bool {
+        self.base()
+            .try_get_node_as::<Control>("%inventory")
+            .map(|c| c.is_visible())
+            .unwrap_or(false)
+    }
+
+    /// Центр нарисованного прицела в координатах экрана (или центр окна, если прицела нет)
+    fn aim_screen_point(&self) -> Option<Vector2> {
+        if let Some(crosshair) = self.base().try_get_node_as::<ColorRect>("%ColorRect") {
+            let rect = crosshair.get_global_rect();
+            return Some(rect.position + rect.size * 0.5);
+        }
+        self.viewport_center()
+    }
+
+    fn viewport_center(&self) -> Option<Vector2> {
+        let viewport = self.base().get_viewport()?;
+        Some(viewport.get_visible_rect().size * 0.5)
+    }
+
     /// Кастует луч вперёд от камеры и возвращает любой узел, в который попал луч
     fn raycast_hit(&self) -> Option<Gd<Node>> {
         let camera = self.base().try_get_node_as::<Camera3D>("Camera3D")?;
 
-        let transform = camera.get_global_transform();
-        let from = transform.origin;
-        let forward = transform.basis * Vector3::new(0.0, 0.0, -1.0);
-        let to = from + forward * 3.0;
+        // Луч идёт ровно через ту точку экрана, где нарисован прицел
+        let screen = self.aim_screen_point()?;
+        let from = camera.project_ray_origin(screen);
+        let to = from + camera.project_ray_normal(screen) * INTERACT_DISTANCE;
 
         let world = self.base().get_world_3d()?;
         let mut space_state = world.get_direct_space_state()?;
@@ -185,8 +231,27 @@ impl Player {
 
     /// Красит crosshair в зависимости от того, на что мы смотрим
     fn update_crosshair(&mut self) {
-        let looking_at_item = self.raycast_item().is_some();
-        let looking_at_dialogue = self.raycast_dialogue().is_some();
+        // Один луч на кадр вместо трёх
+        let hit = self.raycast_hit();
+        let looking_at_item = hit.as_ref().map(|n| n.is_in_group("item")).unwrap_or(false);
+        let looking_at_dialogue = hit.as_ref().map(|n| n.is_in_group("dialogue")).unwrap_or(false);
+
+        if DEBUG_RAY {
+            let name = match &hit {
+                Some(n) => format!("{} ({})", n.get_name(), n.get_class()),
+                None => "ничего".to_string(),
+            };
+            if name != self.last_target {
+                godot_print!(
+                    "[луч] {} | в группе item: {} | прицел {:?}, центр окна {:?}",
+                    name,
+                    looking_at_item,
+                    self.aim_screen_point(),
+                    self.viewport_center()
+                );
+                self.last_target = name;
+            }
+        }
 
         if let Some(mut crosshair) = self.base().try_get_node_as::<ColorRect>("%ColorRect") {
             if looking_at_item {
@@ -209,27 +274,44 @@ impl Player {
         }
 
         if let Some(node) = self.raycast_item() {
-            let item_id = node
+            let (item_id, amount) = node
                 .clone()
                 .try_cast::<Pickupable>()
                 .ok()
-                .map(|p| p.bind().item_id.clone())
-                .unwrap_or_else(|| GString::from("cube"));
+                .map(|p| {
+                    let b = p.bind();
+                    (b.item_id.clone(), b.amount.max(1) as i64)
+                })
+                .unwrap_or_else(|| (GString::from("cube"), 1));
 
             let mut node = node;
             node.queue_free();
 
             if let Some(mut inventory) = self.base().try_get_node_as::<Node>("%inventory") {
-                inventory.call("add_item_icon", &[item_id.to_variant()]);
+                inventory.call(
+                    "add_item_amount",
+                    &[item_id.to_variant(), amount.to_variant()],
+                );
             }
             return;
         }
 
         if let Some(node) = self.raycast_dialogue() {
             if let Ok(trigger) = node.try_cast::<DialogueTrigger>() {
-                let path = trigger.bind().dialogue_path.clone();
+                let (path, shop) = {
+                    let b = trigger.bind();
+                    (b.dialogue_path.clone(), b.shop_path.clone())
+                };
 
-                if let Some(mut dialogue_box) = self.base().try_get_node_as::<DialogueBox>("%DialogueBox") {
+                if path.is_empty() && !shop.is_empty() {
+                    // Торговец без диалога - сразу открываем магазин
+                    if let Some(mut shop_ui) = self.base().try_get_node_as::<ShopUi>("%ShopUI") {
+                        shop_ui.bind_mut().open_shop(shop);
+                    }
+                } else if let Some(mut dialogue_box) =
+                    self.base().try_get_node_as::<DialogueBox>("%DialogueBox")
+                {
+                    dialogue_box.bind_mut().set_shop(shop);
                     dialogue_box.bind_mut().start_dialogue(path);
                 }
             }

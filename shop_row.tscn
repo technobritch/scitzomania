@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://g0dk7641apln"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7mycd"]
+bg_color = Color(0.14901961, 0.14901961, 0.17254902, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="ShopRow" type="PanelContainer" unique_id=1698311308]
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_7mycd")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=849698624]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=787791742]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="NameLabel" type="Label" parent="MarginContainer/HBoxContainer" unique_id=672912279]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Название"
+
+[node name="DetailLabel" type="Label" parent="MarginContainer/HBoxContainer" unique_id=1814324652]
+unique_name_in_owner = true
+modulate = Color(0.6039216, 0.6039216, 0.64705884, 1)
+layout_mode = 2
+text = "в наличии: 1"
+
+[node name="PriceLabel" type="Label" parent="MarginContainer/HBoxContainer" unique_id=2053172764]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "5"
+horizontal_alignment = 2
+
+[node name="ActionButton" type="Button" parent="MarginContainer/HBoxContainer" unique_id=35258185]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+text = "Купить"

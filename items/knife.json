@@ -1,0 +1,9 @@
+{
+  "name": "Нож",
+  "description": "Кухонный нож с потёртой рукоятью. За такое здесь не помилуют.",
+  "shape": "box",
+  "color": "#b8b8c0",
+  "size": "medium",
+  "class": "IV",
+  "combinations": []
+}

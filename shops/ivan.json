@@ -1,0 +1,13 @@
+{
+  "title": "Иван, санитар",
+  "currency": "cigarette",
+  "stock": [
+    { "item": "book", "price": 3, "count": 1 },
+    { "item": "pills", "price": 5, "count": 2, "requires_flag": "ivan_pills_unlocked" },
+    { "item": "knife", "price": 15, "count": 1, "requires_flag": "ivan_trusts_you" }
+  ],
+  "buys": [
+    { "item": "book", "price": 1 },
+    { "item": "pills", "price": 3, "requires_flag": "ivan_pills_unlocked" }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Баночка с таблетками",
+  "description": "Белая баночка с выцветшей этикеткой. Внутри что-то гремит.",
+  "shape": "cylinder",
+  "color": "#f0f0f0",
+  "size": "small",
+  "class": "II",
+  "combinations": []
+}

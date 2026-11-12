@@ -1,7 +1,8 @@
 {
   "name": "Сфера",
   "description": "Гладкий белый шар.",
-  "mesh": "res://models/sphere.tres",
+  "shape": "sphere",
+  "color": "#f2f2f2",
   "size": "small",
   "class": "II",
   "combinations": []

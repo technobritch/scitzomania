@@ -2,12 +2,15 @@ use godot::classes::{Panel, IPanel, PopupMenu, InputEvent, InputEventMouseButton
 use godot::global::MouseButton;
 use godot::prelude::*;
 use crate::hiding_slot::HidingSlot;
+use crate::item_database;
+use godot::classes::text_server::AutowrapMode;
 
 #[derive(GodotClass)]
 #[class(base=Panel)]
 pub struct ItemSlot {
     base: Base<Panel>,
     item_id: Option<GString>,
+    count: u32,
     hidden_at: Option<NodePath>,
     highlighted: bool,
 }
@@ -18,6 +21,7 @@ impl IPanel for ItemSlot {
         Self {
             base,
             item_id: None,
+            count: 1,
             hidden_at: None,
             highlighted: false,
         }
@@ -72,23 +76,48 @@ impl IPanel for ItemSlot {
         let origin = dict.get("origin").map(|v| v.to::<GString>()).unwrap_or_default();
 
         if source_path == self.base().get_path() {
+            if origin.to_string() == "hiding_slot" {
+                if let Some(h) = self.hidden_at.take() {
+                    if let Some(mut hs) = self.base().try_get_node_as::<HidingSlot>(&h) {
+                        hs.bind_mut().remove_occupant(&source_path);
+                    }
+                }
+                self.refresh_border();
+                self.notify_changed();
+            }
             return;
         }
 
         let Some(mut source_slot) = self.base().try_get_node_as::<ItemSlot>(&source_path) else { return };
 
         let dest_item = self.item_id.clone();
+        let dest_count = self.count;
         let dest_hidden_at = self.hidden_at.clone();
-        let (source_item, source_hidden_at) = {
+        let (source_item, source_count, source_hidden_at) = {
             let b = source_slot.bind();
-            (b.item_id.clone(), b.hidden_at.clone())
+            (b.item_id.clone(), b.count, b.hidden_at.clone())
         };
+
+        // Одинаковые стопируемые предметы (сигареты) сливаются в одну стопку
+        if let (Some(s), Some(d)) = (&source_item, &dest_item) {
+            let stackable = item_database::load_item(&s.to_string())
+                .map(|data| data.stackable)
+                .unwrap_or(false);
+            if s == d && stackable && dest_hidden_at.is_none() {
+                source_slot.bind_mut().clear_item();
+                self.set_count(dest_count + source_count);
+                self.notify_changed();
+                return;
+            }
+        }
 
         let unhiding = origin.to_string() == "hiding_slot";
         let new_self_hidden = if unhiding { None } else { source_hidden_at.clone() };
 
-        self.set_item_and_link(source_item, new_self_hidden);
-        source_slot.bind_mut().set_item_and_link(dest_item, dest_hidden_at.clone());
+        self.set_item_and_link(source_item, source_count, new_self_hidden);
+        source_slot
+            .bind_mut()
+            .set_item_and_link(dest_item, dest_count, dest_hidden_at.clone());
 
         if unhiding {
             if let Some(h) = source_hidden_at {
@@ -107,6 +136,8 @@ impl IPanel for ItemSlot {
                 hs.bind_mut().replace_occupant(&self.base().get_path(), source_path.clone());
             }
         }
+
+        self.notify_changed();
     }
 }
 
@@ -118,6 +149,28 @@ impl ItemSlot {
 
     pub fn item_id(&self) -> Option<GString> {
         self.item_id.clone()
+    }
+
+    pub fn count(&self) -> u32 {
+        self.count
+    }
+
+    /// Меняет количество; при нуле ячейка освобождается
+    pub fn set_count(&mut self, count: u32) {
+        if count == 0 {
+            self.clear_item();
+            return;
+        }
+        self.count = count;
+        let id = self.item_id.clone();
+        self.rebuild_label(&id);
+    }
+
+    pub fn set_item_with_count(&mut self, item_id: Option<GString>, count: u32) {
+        self.set_item(item_id);
+        self.count = count.max(1);
+        let id = self.item_id.clone();
+        self.rebuild_label(&id);
     }
 
     pub fn hidden_at(&self) -> Option<NodePath> {
@@ -134,12 +187,14 @@ impl ItemSlot {
                 hs.bind_mut().remove_occupant(&self.base().get_path());
             }
         }
+        self.count = 1;
         self.rebuild_label(&item_id);
         self.item_id = item_id;
         self.refresh_border();
     }
 
-    fn set_item_and_link(&mut self, item_id: Option<GString>, hidden_at: Option<NodePath>) {
+    fn set_item_and_link(&mut self, item_id: Option<GString>, count: u32, hidden_at: Option<NodePath>) {
+        self.count = count.max(1);
         self.rebuild_label(&item_id);
         self.item_id = item_id;
         self.hidden_at = hidden_at;
@@ -160,8 +215,22 @@ impl ItemSlot {
         }
 
         if let Some(id) = item_id {
+            let text = item_database::load_item(&id.to_string())
+                .map(|d| d.name)
+                .unwrap_or_else(|| id.clone());
+            let size = self.base().get_size();
+
+            let shown = if self.count > 1 {
+                GString::from(format!("{}\n×{}", text, self.count).as_str())
+            } else {
+                text
+            };
+
             let mut label = Label::new_alloc();
-            label.set_text(id);
+            label.set_text(&shown);
+            label.set_autowrap_mode(AutowrapMode::WORD_SMART);
+            label.add_theme_font_size_override("font_size", 13);
+            label.set_size(size);
             self.base_mut().add_child(&label);
         }
     }
@@ -189,11 +258,17 @@ impl ItemSlot {
         }
     }
 
+    fn notify_changed(&self) {
+        if let Some(mut inventory) = self.base().try_get_node_as::<Node>("%inventory") {
+            inventory.call_deferred("refresh_selection", &[]);
+        }
+    }
+
     fn notify_selected(&mut self) {
         let Some(item_id) = self.item_id.clone() else { return };
         if let Some(mut inventory) = self.base().try_get_node_as::<Node>("%inventory") {
             let path = self.base().get_path();
-            inventory.call("select_item", &[item_id.to_variant(), path.to_variant()]);
+            inventory.call_deferred("select_item", &[item_id.to_variant(), path.to_variant()]);
         }
     }
 
@@ -239,6 +314,7 @@ impl ItemSlot {
                     }
                 }
                 self.refresh_border();
+                self.notify_changed();
                 godot_print!("Предмет возвращён в сумку");
             }
             _ => {}

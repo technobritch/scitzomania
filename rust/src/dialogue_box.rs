@@ -6,6 +6,7 @@ struct DialogueChoice {
     text: GString,
     next: GString,
     sets_flag: Option<GString>,
+    action: Option<GString>,
 }
 
 #[derive(GodotClass)]
@@ -17,6 +18,7 @@ pub struct DialogueBox {
     choices: Vec<DialogueChoice>,
     in_choice_mode: bool,
     selected_index: i32,
+    shop_path: GString,
 }
 
 #[godot_api]
@@ -29,6 +31,7 @@ impl IControl for DialogueBox {
             choices: Vec::new(),
             in_choice_mode: false,
             selected_index: 0,
+            shop_path: GString::new(),
         }
     }
 }
@@ -37,6 +40,11 @@ impl IControl for DialogueBox {
 impl DialogueBox {
     pub fn is_active(&self) -> bool {
         self.base().is_visible()
+    }
+
+    /// Какой магазин открыть, если в диалоге выбрано действие "shop"
+    pub fn set_shop(&mut self, path: GString) {
+        self.shop_path = path;
     }
 
     fn game_state(&self) -> Option<Gd<Node>> {
@@ -130,6 +138,7 @@ impl DialogueBox {
                             let next = choice_dict.get("next").map(|v| v.to::<GString>()).unwrap_or_default();
                             let requires_flag = choice_dict.get("requires_flag").map(|v| v.to::<GString>());
                             let sets_flag = choice_dict.get("sets_flag").map(|v| v.to::<GString>());
+                            let action = choice_dict.get("action").map(|v| v.to::<GString>());
 
                             if let Some(flag) = &requires_flag {
                                 if !self.flag_is_true(flag) {
@@ -141,6 +150,7 @@ impl DialogueBox {
                                 text: choice_text,
                                 next,
                                 sets_flag,
+                                action,
                             });
                         }
                     }
@@ -223,9 +233,18 @@ impl DialogueBox {
             if idx < self.choices.len() {
                 let next = self.choices[idx].next.clone();
                 let sets_flag = self.choices[idx].sets_flag.clone();
+                let action = self.choices[idx].action.clone();
 
                 if let Some(flag) = sets_flag {
                     self.set_flag(&flag);
+                }
+
+                if action.map(|a| a.to_string() == "shop").unwrap_or(false) {
+                    self.close();
+                    if let Some(mut shop) = self.base().try_get_node_as::<Node>("%ShopUI") {
+                        shop.call_deferred("open_shop", &[self.shop_path.to_variant()]);
+                    }
+                    return;
                 }
 
                 if next.is_empty() {

@@ -1,0 +1,9 @@
+{
+  "name": "Книга",
+  "description": "Потёртая книга в коричневой обложке. Страницы пожелтели от времени.",
+  "shape": "box",
+  "color": "#6b4a2b",
+  "size": "medium",
+  "class": "I",
+  "combinations": []
+}

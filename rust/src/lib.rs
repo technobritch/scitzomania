@@ -14,5 +14,6 @@ mod item_preview;
 mod item_database;
 mod pickupable;
 mod hiding_slot;
+mod model_util;
 mod game_state;
-mod item_chip;
+mod shop_ui;
