@@ -1,6 +1,7 @@
 use godot::classes::{
     CharacterBody3D, ICharacterBody3D, Camera3D, Input, ProjectSettings,
     InputEvent, InputEventMouseMotion, PhysicsRayQueryParameters3D, Node, ColorRect, Control,
+    CollisionShape3D, CapsuleShape3D,
 };
 use godot::classes::input::MouseMode;
 use godot::prelude::*;
@@ -14,15 +15,33 @@ const INTERACT_DISTANCE: f32 = 4.0;
 /// true - в Output печатается, во что попадает луч прицела (для отладки)
 const DEBUG_RAY: bool = true;
 
+const WALK_SPEED: f32 = 3.0;
+const SPRINT_SPEED: f32 = 6.0;
+const CROUCH_SPEED: f32 = 1.5;
+const CROUCH_HEIGHT_RATIO: f32 = 0.6; // высота капсулы в приседе относительно обычной
+const CROUCH_BLEND_SPEED: f32 = 8.0; // скорость плавного опускания/подъёма камеры (1/сек)
+const SPRINT_FOV_BONUS: f32 = 8.0; // на сколько градусов расширяется FOV при беге
+const SPRINT_FOV_BLEND_SPEED: f32 = 6.0;
+
 #[derive(GodotClass)]
 #[class(base=CharacterBody3D)]
 struct Player {
     base: Base<CharacterBody3D>,
-    speed: f32,
     jump_velocity: f32,
     mouse_sensitivity: f32,
     captured: bool,
     last_target: String,
+
+    // Присед
+    crouching: bool,
+    crouch_blend: f32, // 0.0 — стоим, 1.0 — присели (для плавной камеры)
+    stand_height: f32,
+    stand_col_y: f32,
+    stand_cam_y: f32,
+
+    // Бег
+    base_fov: f32,
+    sprint_blend: f32,
 }
 
 #[godot_api]
@@ -30,15 +49,37 @@ impl ICharacterBody3D for Player {
     fn init(base: Base<CharacterBody3D>) -> Self {
         Self {
             base,
-            speed: 5.0,
             jump_velocity: 4.5,
             mouse_sensitivity: 0.003,
             captured: false,
             last_target: String::new(),
+            crouching: false,
+            crouch_blend: 0.0,
+            stand_height: 2.0,
+            stand_col_y: 0.0,
+            stand_cam_y: 1.8,
+            base_fov: 75.0,
+            sprint_blend: 0.0,
         }
     }
 
-    fn ready(&mut self) {}
+    fn ready(&mut self) {
+        // Запоминаем исходные параметры капсулы
+        if let Some(col) = self.base().try_get_node_as::<CollisionShape3D>("CollisionShape3D") {
+            self.stand_col_y = col.get_position().y;
+            if let Some(shape) = col.get_shape() {
+                if let Ok(capsule) = shape.try_cast::<CapsuleShape3D>() {
+                    self.stand_height = capsule.get_height();
+                }
+            }
+        }
+
+        // Запоминаем исходную высоту камеры и FOV
+        if let Some(camera) = self.base().try_get_node_as::<Camera3D>("Camera3D") {
+            self.stand_cam_y = camera.get_position().y;
+            self.base_fov = camera.get_fov();
+        }
+    }
 
     fn unhandled_input(&mut self, event: Gd<InputEvent>) {
         if self.is_inventory_open() || self.is_shop_open() {
@@ -98,6 +139,8 @@ impl ICharacterBody3D for Player {
     }
 
     fn physics_process(&mut self, delta: f64) {
+        let delta = delta as f32;
+
         if self.is_dialogue_active() || self.is_inventory_open() {
             self.base_mut().set_velocity(Vector3::ZERO);
             self.base_mut().move_and_slide();
@@ -105,10 +148,15 @@ impl ICharacterBody3D for Player {
             return;
         }
 
-        let mut velocity = self.base().get_velocity();
-        let delta = delta as f32;
+        let input = Input::singleton();
+        let on_floor = self.base().is_on_floor();
 
-        if !self.base().is_on_floor() {
+        // --- Присед ---
+        self.update_crouch(input.is_action_pressed("crouch"));
+
+        let mut velocity = self.base().get_velocity();
+
+        if !on_floor {
             let gravity = ProjectSettings::singleton()
                 .get_setting("physics/3d/default_gravity")
                 .try_to::<f32>()
@@ -116,22 +164,37 @@ impl ICharacterBody3D for Player {
             velocity.y -= gravity * delta;
         }
 
-        let input = Input::singleton();
-
-        if input.is_action_just_pressed("ui_accept") && self.base().is_on_floor() {
+        if input.is_action_just_pressed("ui_accept") && on_floor && !self.crouching {
             velocity.y = self.jump_velocity;
         }
 
         let input_dir = input.get_vector("ui_left", "ui_right", "ui_up", "ui_down");
+
+        // --- Выбор скорости: присед / бег / ходьба ---
+        // Бег — только пока движемся вперёд и не в приседе
+        let moving_forward = input_dir.y < -0.1;
+        let sprinting = input.is_action_pressed("sprint") && moving_forward && !self.crouching;
+
+        let speed = if self.crouching {
+            CROUCH_SPEED
+        } else if sprinting {
+            SPRINT_SPEED
+        } else {
+            WALK_SPEED
+        };
+
+        self.update_camera(delta, sprinting);
+
         let basis = self.base().get_transform().basis;
         let direction = (basis * Vector3::new(input_dir.x, 0.0, input_dir.y)).normalized_or_zero();
 
         if direction != Vector3::ZERO {
-            velocity.x = direction.x * self.speed;
-            velocity.z = direction.z * self.speed;
+            velocity.x = direction.x * speed;
+            velocity.z = direction.z * speed;
         } else {
-            velocity.x = move_toward(velocity.x, 0.0, self.speed);
-            velocity.z = move_toward(velocity.z, 0.0, self.speed);
+            // дельта с запасом, чтобы остановка оставалась мгновенной, как раньше
+            velocity.x = move_toward(velocity.x, 0.0, SPRINT_SPEED);
+            velocity.z = move_toward(velocity.z, 0.0, SPRINT_SPEED);
         }
 
         self.base_mut().set_velocity(velocity);
@@ -173,6 +236,80 @@ impl Player {
             .try_get_node_as::<Control>("%inventory")
             .map(|c| c.is_visible())
             .unwrap_or(false)
+    }
+
+    /// Логика приседа: сел — если зажата кнопка и мы на полу; встал — если отпустили и над головой свободно
+    fn update_crouch(&mut self, want_crouch: bool) {
+        let on_floor = self.base().is_on_floor();
+
+        if want_crouch && !self.crouching && on_floor {
+            self.crouching = true;
+            let h = self.stand_height * CROUCH_HEIGHT_RATIO;
+            self.apply_collision_height(h);
+        } else if !want_crouch && self.crouching && self.can_stand_up() {
+            self.crouching = false;
+            let h = self.stand_height;
+            self.apply_collision_height(h);
+        }
+    }
+
+    /// Меняет высоту капсулы так, чтобы её низ остался на месте (игрок не зависает в воздухе)
+    fn apply_collision_height(&mut self, new_height: f32) {
+        let full = self.stand_height;
+        let base_y = self.stand_col_y;
+
+        if let Some(mut col) = self.base().try_get_node_as::<CollisionShape3D>("CollisionShape3D") {
+            if let Some(shape) = col.get_shape() {
+                if let Ok(mut capsule) = shape.try_cast::<CapsuleShape3D>() {
+                    capsule.set_height(new_height);
+                }
+            }
+            let mut pos = col.get_position();
+            pos.y = base_y + (new_height - full) * 0.5;
+            col.set_position(pos);
+        }
+    }
+
+    /// Проверяет лучом вверх, хватает ли места, чтобы встать
+    fn can_stand_up(&self) -> bool {
+        let origin = self.base().get_global_position();
+        let bottom = origin.y + self.stand_col_y - self.stand_height * 0.5;
+        let crouch_top = bottom + self.stand_height * CROUCH_HEIGHT_RATIO;
+        let full_top = bottom + self.stand_height + 0.05;
+
+        let from = Vector3::new(origin.x, crouch_top - 0.05, origin.z);
+        let to = Vector3::new(origin.x, full_top, origin.z);
+
+        let Some(world) = self.base().get_world_3d() else { return true };
+        let Some(mut space_state) = world.get_direct_space_state() else { return true };
+        let Some(mut query) = PhysicsRayQueryParameters3D::create(from, to) else { return true };
+
+        // Не попадаем лучом в самого игрока
+        let mut exclude = Array::<Rid>::new();
+        exclude.push(self.base().get_rid());
+        query.set_exclude(&exclude);
+
+        space_state.intersect_ray(&query).is_empty()
+    }
+
+    /// Плавная высота камеры (присед) и FOV (бег)
+    fn update_camera(&mut self, delta: f32, sprinting: bool) {
+        let crouch_target = if self.crouching { 1.0 } else { 0.0 };
+        self.crouch_blend = move_toward(self.crouch_blend, crouch_target, CROUCH_BLEND_SPEED * delta);
+
+        let sprint_target = if sprinting { 1.0 } else { 0.0 };
+        self.sprint_blend = move_toward(self.sprint_blend, sprint_target, SPRINT_FOV_BLEND_SPEED * delta);
+
+        let crouch_drop = self.stand_height * (1.0 - CROUCH_HEIGHT_RATIO);
+        let cam_y = self.stand_cam_y - crouch_drop * self.crouch_blend;
+        let fov = self.base_fov + SPRINT_FOV_BONUS * self.sprint_blend;
+
+        if let Some(mut camera) = self.base().try_get_node_as::<Camera3D>("Camera3D") {
+            let mut pos = camera.get_position();
+            pos.y = cam_y;
+            camera.set_position(pos);
+            camera.set_fov(fov);
+        }
     }
 
     /// Центр нарисованного прицела в координатах экрана (или центр окна, если прицела нет)

@@ -1,7 +1,9 @@
-use godot::classes::{Panel, IPanel, PopupMenu, InputEvent, InputEventMouseButton, Label, StyleBoxFlat, Node};
-use godot::global::MouseButton;
+use godot::classes::{Panel, IPanel, PopupMenu, InputEvent, InputEventMouseButton, StyleBoxFlat, Node, Label};
+use godot::classes::control::LayoutPreset;
+use godot::global::{HorizontalAlignment, MouseButton, VerticalAlignment};
 use godot::prelude::*;
 use crate::hiding_slot::HidingSlot;
+use crate::item_icon;
 use crate::item_database;
 use godot::classes::text_server::AutowrapMode;
 
@@ -54,8 +56,7 @@ impl IPanel for ItemSlot {
             return Variant::nil();
         };
 
-        let mut preview = Label::new_alloc();
-        preview.set_text(&item_id);
+        let preview = item_icon::make_drag_preview(&item_id);
         self.base_mut().set_drag_preview(&preview);
 
         let mut dict = Dictionary::<Variant, Variant>::new();
@@ -207,32 +208,56 @@ impl ItemSlot {
     }
 
     fn rebuild_label(&mut self, item_id: &Option<GString>) {
-        let count = self.base().get_child_count();
-        for i in (0..count).rev() {
+        let child_count = self.base().get_child_count();
+        for i in (0..child_count).rev() {
             if let Some(mut child) = self.base().get_child(i) {
                 child.queue_free();
             }
         }
 
-        if let Some(id) = item_id {
-            let text = item_database::load_item(&id.to_string())
-                .map(|d| d.name)
-                .unwrap_or_else(|| id.clone());
-            let size = self.base().get_size();
+        let Some(id) = item_id else { return };
+        let count = self.count;
 
-            let shown = if self.count > 1 {
-                GString::from(format!("{}\n×{}", text, self.count).as_str())
-            } else {
-                text
-            };
+        if item_icon::has_icon(id) {
+            // Есть PNG: рисуем иконку на весь слот, а количество — маленьким бейджем в правом нижнем углу
+            let visual = item_icon::make_item_visual(id);
+            self.base_mut().add_child(&visual);
 
-            let mut label = Label::new_alloc();
-            label.set_text(&shown);
-            label.set_autowrap_mode(AutowrapMode::WORD_SMART);
-            label.add_theme_font_size_override("font_size", 13);
-            label.set_size(size);
-            self.base_mut().add_child(&label);
+            if count > 1 {
+                let mut badge = Label::new_alloc();
+                badge.set_text(&GString::from(format!("×{}", count).as_str()));
+                badge.set_anchors_preset(LayoutPreset::FULL_RECT);
+                badge.set_horizontal_alignment(HorizontalAlignment::RIGHT);
+                badge.set_vertical_alignment(VerticalAlignment::BOTTOM);
+                badge.add_theme_font_size_override("font_size", 13);
+                badge.add_theme_constant_override("outline_size", 4);
+                badge.add_theme_color_override("font_outline_color", Color::from_rgb(0.0, 0.0, 0.0));
+                self.base_mut().add_child(&badge);
+            }
+            return;
         }
+
+        // PNG нет: текстовая подпись как раньше — «Название ×N»
+        let name = item_database::load_item(&id.to_string())
+            .map(|d| d.name.to_string())
+            .unwrap_or_else(|| id.to_string());
+        let shown = if count > 1 {
+            format!("{} ×{}", name, count)
+        } else {
+            name
+        };
+
+        let mut size = self.base().get_size();
+        if size.x < 1.0 || size.y < 1.0 {
+            size = self.base().get_custom_minimum_size();
+        }
+
+        let mut label = Label::new_alloc();
+        label.set_text(&GString::from(shown.as_str()));
+        label.set_autowrap_mode(AutowrapMode::WORD_SMART);
+        label.add_theme_font_size_override("font_size", 13);
+        label.set_size(size);
+        self.base_mut().add_child(&label);
     }
 
     pub fn set_highlighted(&mut self, on: bool) {

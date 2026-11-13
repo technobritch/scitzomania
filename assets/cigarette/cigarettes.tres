@@ -1,0 +1,43 @@
+[gd_resource type="ArrayMesh" format=4 uid="uid://50bkuon3c86b"]
+
+[ext_resource type="Texture2D" uid="uid://be3xm8lf403fm" path="res://assets/cigarette/cigarette_box_0.png" id="1_w7jgu"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hel32"]
+resource_name = "Cigarette_Box_01"
+cull_mode = 2
+albedo_texture = ExtResource("1_w7jgu")
+roughness = 0.82111454
+texture_filter = 2
+metadata/_gltf_primary_texture_coord = 0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_vh7rv"]
+_surfaces = [{
+"aabb": AABB(-0.15, -0.29000002, -0.05, 0.3, 0.49, 0.1),
+"format": 34896613377,
+"index_count": 66,
+"index_data": PackedByteArray("AAABAAIAAwACAAEABAACAAMAAAACAAQABAADAAUAAwABAAYABQADAAYABAAFAAcABQAGAAcABAAHAAAACAAGAAEACAAJAAYACQAHAAYACgAIAAEACgABAAAACQALAAcACwAKAAAACwAAAAcABwAMAAAABwANAAwADAANAA4ADAAOAA8A"),
+"name": "Cigarette_Box_01",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 16,
+"vertex_data": PackedByteArray("AAAFL///AAAAAAUvAAAAAAAA//8AAAAA/////wAAAAAAAP////8AAP///////wAA//8FLwAAAAD//wUv//8AAEgI407ZGAAAtvfjTtkYAABICONOJecAALb3404l5wAAAAAAAP9/AAD//wAA/38AAP//OQXMTAAAAAA5BcxMAAA=")
+}]
+blend_shape_mode = 0
+
+[resource]
+resource_name = "Sketchfab_Scene_Cube_Cigarette Box 01_0"
+_surfaces = [{
+"aabb": AABB(-0.15, -0.29000002, -0.05, 0.3, 0.49, 0.1),
+"attribute_data": PackedByteArray("/1f/0v9+/9L/fv8z/1j/M//T/wD/g/8A/4P/Jv/T/yb//v8z/9b/M//W/9L//v/S/3////9//9P/gf/T/9f/M/99/zP/ff/S/9f/0v9X/zP/Af8z/wH/0v9X/9L/1f/S/4H/0/+B////1f//pYj21rLVZtP/1//SYtUM1ELOk/r/1f//Qs6T+qWI9tb/ff/SstVm02LVDNT/1f/S/3////+B/9P/gf//pYj21v/X/9L/ff/SYtUM1P/V////1f/SQs6T+v99/9L/1f//stVm0//V/9L/1//S"),
+"format": 34896613399,
+"index_count": 66,
+"index_data": PackedByteArray("AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADwAQABEADwARABIAEwAUABUAEwAVABYAFwAYABkAFwAZABoAGwAcAB0AHgAfACAAIQAiACMAJAAlACYAJwAoACkAKgArACwALQAuAC8AMAAxADIAMwA0ADUA"),
+"material": SubResource("StandardMaterial3D_hel32"),
+"name": "Cigarette_Box_01",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 54,
+"vertex_data": PackedByteArray("AAAFL///AAAAAAUvAAAAAAAA//8AAAAAAAD/////AAAAAP////+qKgAA//8AAKoq/////wAAqir///////+qKv///////wAA/////wAAAAD//wUvAAAAAP//BS///wAAAAAAAP9/9eD//wAA/3/14P//OQXMTPXg/////wAAAAAAAP//AAAAAAAABS8AAAAA//8FLwAAAAAAAP////8AAP///////wAA//8FL///AAAAAAUv//8AAP//BS///247//8AAP9/5joAAAAA/3/mPAAABS///289SAjjTtkYnE229+NO2RicTf//BS8AAJxNtvfjTiXncQVICONOJedxBQAABS///3EFSAjjTiXnAi5ICONO2RgCLgAABS8AAAIutvfjTtkYVD+29+NOJedUP///BS///1Q/AAAAAP9/9eD//zkFzEz14AAAOQXMTPXgSAjjTtkYkXn//wUvAACReQAABS8AAJF5tvfjTiXnpAQAAAUv//+kBP//BS///6QESAjjTiXnbS0AAAUvAABtLQAABS///20ttvfjTtkYc/v//wUv//9z+///BS8AAHP7/z//f/8//3//P/9//z//f6qqqqqqqqqqqqqqqqqqqqr/v/9//7//f/+//3//v/9/G08bTxtPG08bTxtP////f////3////9/////f/9//3//f/9//3//f/9//38JFhTrFhZS6+UVZurYFSbqfgjx834I8fN+CPHz6y+0s+svtLPrL7Sz/ydvL/8nby//J28vnGWj2Zxlo9mcZaPZG08bTxtPG08bTxtPAAD/fwAA/38AAP9/RjwKwUY8CsFGPArBOifDLzonwy86J8MvbkIhe25CIXtuQiF7")
+}]
+blend_shape_mode = 0
+shadow_mesh = SubResource("ArrayMesh_vh7rv")

@@ -4,7 +4,7 @@ struct MyExtension;
 
 #[gdextension]
 unsafe impl ExtensionLibrary for MyExtension {}
-
+mod item_icon;
 mod player;
 mod inventory;
 mod item_slot;
