@@ -9,6 +9,7 @@ use crate::dialogue_box::DialogueBox;
 use crate::dialogue_trigger::DialogueTrigger;
 use crate::pickupable::Pickupable;
 use crate::shop_ui::ShopUi;
+use crate::npc::Npc;
 
 /// Как далеко от камеры игрок может взаимодействовать (в метрах)
 const INTERACT_DISTANCE: f32 = 4.0;
@@ -439,6 +440,19 @@ impl Player {
                     let b = trigger.bind();
                     (b.dialogue_path.clone(), b.shop_path.clone())
                 };
+
+                // Если разговариваем с NPC — он останавливается и поворачивается к игроку
+                let mut owner = trigger.get_parent();
+                while let Some(n) = owner {
+                    match n.try_cast::<Npc>() {
+                        Ok(mut npc) => {
+                            let player_pos = self.base().get_global_position();
+                            npc.bind_mut().begin_dialogue(player_pos);
+                            break;
+                        }
+                        Err(n) => owner = n.get_parent(),
+                    }
+                }
 
                 if path.is_empty() && !shop.is_empty() {
                     // Торговец без диалога - сразу открываем магазин

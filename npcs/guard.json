@@ -1,0 +1,9 @@
+{
+  "default": {
+    "any": { "room": "room_a", "anim": "idle" }
+  },
+  "overrides": [
+    { "priority": 10, "if": "flag:guard_in_room_b",
+      "any": { "room": "room_b", "anim": "idle" } }
+  ]
+}
